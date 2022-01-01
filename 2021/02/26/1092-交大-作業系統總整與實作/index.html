@@ -7,20 +7,20 @@
   
   <title>1092-交大-作業系統總整與實作 | Shizsun&#39;s blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="Introduction Week1 - Before OSDI">
+  <meta name="description" content="Introduction Week1 - Before OSDI Week2 - Booting Week3 - Interrupt and Interrupt Handling I Week4 - Interrupt and Interrupt Handling II Week5 - Process Management I Week6 - Process Management II Week">
 <meta name="keywords" content="NCTU,Operating System">
 <meta property="og:type" content="article">
 <meta property="og:title" content="1092-交大-作業系統總整與實作">
 <meta property="og:url" content="https://shizsun0609tw.github.io/2021/02/26/1092-交大-作業系統總整與實作/index.html">
 <meta property="og:site_name" content="Shizsun&#39;s blog">
-<meta property="og:description" content="Introduction Week1 - Before OSDI">
+<meta property="og:description" content="Introduction Week1 - Before OSDI Week2 - Booting Week3 - Interrupt and Interrupt Handling I Week4 - Interrupt and Interrupt Handling II Week5 - Process Management I Week6 - Process Management II Week">
 <meta property="og:locale" content="default">
 <meta property="og:image" content="https://shizsun0609tw.github.io/2021/02/26/1092-交大-作業系統總整與實作/Elf-layout.png">
 <meta property="og:image" content="https://shizsun0609tw.github.io/2021/02/26/1092-交大-作業系統總整與實作/memoryLayoutC.jpg">
-<meta property="og:updated_time" content="2021-02-26T09:35:01.725Z">
+<meta property="og:updated_time" content="2021-04-16T07:35:41.302Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="1092-交大-作業系統總整與實作">
-<meta name="twitter:description" content="Introduction Week1 - Before OSDI">
+<meta name="twitter:description" content="Introduction Week1 - Before OSDI Week2 - Booting Week3 - Interrupt and Interrupt Handling I Week4 - Interrupt and Interrupt Handling II Week5 - Process Management I Week6 - Process Management II Week">
 <meta name="twitter:image" content="https://shizsun0609tw.github.io/2021/02/26/1092-交大-作業系統總整與實作/Elf-layout.png">
   
     <link rel="alternate" href="/atom.xml" title="Shizsun&#39;s blog" type="application/atom+xml">
@@ -98,6 +98,12 @@
         <ul>
 <li><a href="#Introduction">Introduction</a></li>
 <li><a href="#Week1-Before-OSDI">Week1 - Before OSDI</a></li>
+<li><a href="#Week2-Booting">Week2 - Booting</a></li>
+<li><a href="#Week3-Interrupt-and-Interrupt-Handling-I">Week3 - Interrupt and Interrupt Handling I</a></li>
+<li><a href="#Week4-Interrupt-and-Interrupt-Handling-II">Week4 - Interrupt and Interrupt Handling II</a></li>
+<li><a href="#Week5-Process-Management-I">Week5 - Process Management I</a></li>
+<li><a href="#Week6-Process-Management-II">Week6 - Process Management II</a></li>
+<li><a href="#Week7-Memory-Management-I">Week7 - Memory Management I</a></li>
 </ul>
 <a id="more"></a>
 
@@ -167,7 +173,7 @@
 </ul>
 <h3 id="Makefile"><a href="#Makefile" class="headerlink" title="Makefile"></a>Makefile</h3><p>當 Program 的程式量越來越大的時候，我們如果一個一個手動編成 .o 檔還要自己 link 是非常費神且沒有效率的事情<br>因此我們可以透過撰寫 Makefile 來幫我們自動化的進行這些動作，並依照是否有修改檔案決定是否需要重新 compile 與 link</p>
 <h3 id="Autoconf-tool"><a href="#Autoconf-tool" class="headerlink" title="Autoconf tool"></a>Autoconf tool</h3><p>在我們完成 program 後，我們會希望他在各個平台都有辦法執行<br>因此 Autoconf tool 可以幫我們做各平台檢查與轉換的工作</p>
-<h3 id="Debugger"><a href="#Debugger" class="headerlink" title="Debugger"></a>Debugger</h3><p>基本上寫 code 的過程中不可能會沒寫出 bug，因此我們需要 debugger 來輔助我們能更方便的找出程式在哪裡當掉<br>debugger 能夠找到這些資訊的原理為<br> <font color="red">debugger 會將我們寫好的程式編出來之後修改掉幾個小部分(breakpoint)，並且告訴 CPU 說遇到這些部分當掉就跳過去找他</font></p>
+<h3 id="Debugger"><a href="#Debugger" class="headerlink" title="Debugger"></a>Debugger</h3><p>基本上寫 code 的過程中不可能會沒寫出 bug，因此我們需要 debugger 來輔助我們能更方便的找出程式在哪裡當掉<br>debugger 能夠找到這些資訊的原理為<br> <font color="red">debugger 會將我們寫好的程式編出來之後抹掉一個 Byte，並且告訴 CPU 說遇到這些部分當掉就跳過去找他</font></p>
 <p>我們就可以在這樣的情況下取得當下程式的資訊(Callstack)</p>
 <p>另外要提到的是在 User space 的 debugger 會由 kernel space 執行<br>那 Kernel space 的 debugger 怎麼辦?<br>聽說當初最早的創作人表示，如果會寫出 bug 就不要寫 kernel XD<br>不過由於我們都是普通人，因此現在還是有一些小程式可以輔助我們 debug，但這些 debugger 該怎麼 debug 就不要問我了</p>
 <p>常見的 Debugger 有: gdb, kgdb, …</p>
@@ -180,11 +186,96 @@
 <h3 id="Version-Control"><a href="#Version-Control" class="headerlink" title="Version Control"></a>Version Control</h3><p>在多人大型軟體開發的情況下版本控制有多重要應該不用多做說明了<br>版本控制的原理主要是在每次更新的時候存下相異的部分(如果整個檔案重存太耗資源)<br>如果沒多人修改同一個檔案就直接將相異部分 merge 就好<br>如果有多人修改同一個檔案就先去打一架決定要用誰的再合併</p>
 <p>常見有: git, SVN, …</p>
 <hr>
+<h2 id="Week2-Booting"><a href="#Week2-Booting" class="headerlink" title="Week2 - Booting"></a>Week2 - Booting</h2><p><font color="red"><strong>本周介紹的內容由按下開機鍵之後到你可以登入開始使用電腦的過程中發生了哪些事</strong></font></p>
+<p>按下開機鍵 -&gt; 喚醒 CPU -&gt; CPU 到指定的 Permanen Memory(通常是ROM) 拿第一個程式 (Bootloader1)<br>-&gt; Bootloader1 做初步的初始化以及喚醒一些可以 drive 各個裝置的 Program (Bootloader2)<br>-&gt; Bootloader2 將 device 內 load OS 的 Program 讀出來 (Bootloader3)<br>-&gt; Bootloader3 將 OS load 出來執行 (Bootloader4)<br>-&gt; Bootloader4(OS) 執行使用者需要的各種 Program</p>
+<h3 id="Bootloader1"><a href="#Bootloader1" class="headerlink" title="Bootloader1"></a>Bootloader1</h3><p><font color="red">CPU 剛被喚醒後並不清楚外面環境(device)的任何狀況，會先到指定的 Memory 位置執行指定的 Program，也就是 Bootloader1</font><br>SoC(System on Chip)，因此會找指定的 Memory(ROM) 去執行 Program<br>因此在出廠的時候就已經燒在 firmware 上<br>這個 Program 會將部分參數初始化後並檢查周邊的 hardware 狀況<br>可能會提供簡單的 Shell 提供使用(ex:x86/BIOS)<br>將 device 內的 Program(Bootloader2) load 進 Memory 並將主導權轉交給 Bootloader2</p>
+<h3 id="Bootloader2"><a href="#Bootloader2" class="headerlink" title="Bootloader2"></a>Bootloader2</h3><p>將 OS 的 loader 給 load 進 Memory<br>可能提供簡單的 Shell 提供使用(選擇何種 OS 開機)<br>不是所有裝置都有這個部分的 Bootloader(ex:Smart Phone 開機時就已經決定是 Android 或是 IOS)<br>到目前為止都是在絕對位置去取得所需的資料，CPU 還不認得 filesystem<br>將主導權交給 Bootloader3</p>
+<h3 id="Bootloader3"><a href="#Bootloader3" class="headerlink" title="Bootloader3"></a>Bootloader3</h3><p>將 OS load 進 Memory 並作一些初始化<br>load kernel, 各種 table, schedulder 等 Program<br>將主導權交給 OS(Bootloader4)</p>
+<h3 id="Bootloader4"><a href="#Bootloader4" class="headerlink" title="Bootloader4"></a>Bootloader4</h3><p>OS 執行 Shell 提供 User 可以進行各種指令與程式的執行(fork)</p>
+<hr>
+<h2 id="Week3-Interrupt-and-Interrupt-Handling-I"><a href="#Week3-Interrupt-and-Interrupt-Handling-I" class="headerlink" title="Week3 Interrupt and Interrupt Handling I"></a>Week3 Interrupt and Interrupt Handling I</h2><p>CPU 的 Interrupt 常用於 Device Driver 上或是各種服務的中斷與執行</p>
+<h3 id="Device-Driver"><a href="#Device-Driver" class="headerlink" title="Device Driver"></a>Device Driver</h3><p>Driver 被定義為驅動各種裝置的 Program<br>Device 會透過物理上的連接(PIN)將訊號送到 bus 上<br>Assembly 透過正確的溝通方式(Protocal)對於 device 做操作<br>IO device 會佔據 Memory 區塊讓 OS 對此段 Memory 操作時對 device 發訊號<br>CPU 不會直接與 device 溝通(浪費資源)，會先與 Controller 溝通再由 Controller 對 device 發訊號</p>
+<h3 id="Interrupt"><a href="#Interrupt" class="headerlink" title="Interrupt"></a>Interrupt</h3><p>在 CPU 工作時如果用無限迴圈去 handle IO 訊號相當浪費資源，因此在用新訊號出現時再透過 Interrupt 告知 CPU 有事情需處理<br>CPU 在處理完目前的工作時就會接著處理 Interrupt 內的訊息</p>
+<h3 id="Exception"><a href="#Exception" class="headerlink" title="Exception"></a>Exception</h3><p>通常我們會將軟體上的 Interupt (Software Interrupt) 稱為 Exception<br>而如果只說 Intterupt 通常指硬體上線路升為 high 與對應的處理<br>兩者的後續的行為大致相同(查 vector table 做對應的 handler)<br>Exception 的例子: Divid by Zero</p>
+<hr>
+<h2 id="Week4-Interrupt-and-Interrupt-Handling-II"><a href="#Week4-Interrupt-and-Interrupt-Handling-II" class="headerlink" title="Week4 Interrupt and Interrupt Handling II"></a>Week4 Interrupt and Interrupt Handling II</h2><h3 id="PIC"><a href="#PIC" class="headerlink" title="PIC"></a>PIC</h3><p>各種 device 會將線路連接到 PIC (Programmable inerrupt controller) 再透過 PIC 連接到 CPU<br>當有新的 interrupt 訊號進來，device 會將線路升成 high 再透過 PIC 送給 CPU<br>PIC 也可能有多個串聯、並聯<br>CPU 收到 Interrupt 訊號會先將當前的事項處理完或是將 context 存下後，先查看是何種編號的 interrupt 再查詢 vector table 做對應處置<br>vector table 的內容擺放 jump 到對應執行的程式碼 (Interrupt Handler)</p>
+<h3 id="Exception-timing"><a href="#Exception-timing" class="headerlink" title="Exception timing"></a>Exception timing</h3><p>Interrupt 的整個過程 (Interrupt response time) 會包含 Interrupt lantency 與 Processing time<br>Interrupt lantency 為 device 送出訊號直到 CPU 收到訊號中間的時間，IO 需要點時間延遲送進 CPU<br>Processing time 為 CPU 開始執行對應的程式碼，可以透過撰寫者控制執行速度</p>
+<h3 id="Interrupt-Handler"><a href="#Interrupt-Handler" class="headerlink" title="Interrupt Handler"></a>Interrupt Handler</h3><p>Interrupt Handler 大致會分為 Top Half 與 Bottom Half (概念上的設計方式)<br>某些 device 需要即時性的處理(例如網卡收封包)，就會在 Interrupt 之後在 Top Half 的部分先做處理<br>在 Top Half 的執行過程中，也有機會被 Priorty 較高的 Interrupt 所打斷<br>而封包的解析並沒有這麼的需要即時性，因此會先讓 CPU 回去處理原本的事物並接受其他 Interrupt<br>並將封包的處理排進 scedule 內等待處理，後半段處理的部分我們稱為 Bottom Half<br>透過上述的概念我們可以知道 Interrupt Handler 的執行可能會分散在 CPU 的工作時間內</p>
+<h3 id="Driver"><a href="#Driver" class="headerlink" title="Driver"></a>Driver</h3><p>當有新的 driver 進出時，會有 init 與 cleanup 的 module 讓 OS 去註冊<br>driver 會由許多定義好的 API 所組成，將 function 對應到 OS 的執行工作表上<br>例如當 OS 執行 write 時，就會將 function 對應到 C: 或是 D: 上 driver 的 API 執行</p>
+<h3 id="Softirq"><a href="#Softirq" class="headerlink" title="Softirq"></a>Softirq</h3><p>Softirq 為 linux 系統提供的功能(Library)，起因是由於 Interrupt 之間存在許多互相打斷等等複雜的關係，因此 Linux 提供這項功能讓撰寫者能更方便的使用<br>Interrupt Handler 可以透過 Softirq 的方式執行，撰寫者必須 follow softirq 的建議的撰寫方法達到執行快速的效果<br>Softirq 內部會幫你做些整理或是排程，有可能把 Bottom Half 的部分在不同的 CPU 上去執行…等等<br>這些內部事項都是為了讓執行起來更快更有效率而做</p>
+<p>舉例來說，假設 Softirq 內是空的時發生了 Interrupt A 之後在 Interrupt A 的 Bottom Half 執行時發生了 Interrupt B<br>完整的過程為<br>origin program -&gt; Interrupt A -&gt; A Top Half -&gt; Softirq(目前只有 Interrupt A) -&gt; A Bottom Half<br>-&gt; Interrupt B -&gt; B Top Half -&gt; Softirq(裡面有 Interrupt A, B) -&gt; A Bottom Half<br>-&gt; Softirq(只剩 Interrupt B) -&gt; B Bottom Half -&gt; Softirq(空了) -&gt; origin program </p>
+<h3 id="Tasklet"><a href="#Tasklet" class="headerlink" title="Tasklet"></a>Tasklet</h3><p>常被 Softirq 拿來比較的 Tasklet 為 Softirq 裡面的一項功能<br>就我的理解，Tasklet 就像是一個小的 Softirq 並且在 Softirq 裡面參與排程<br>相對較不重要的 program bottom half 就會被丟到 Tasklet 裡面<br>Softirq 在排程的過程中也會執行到 Tasklet 這個功能，Tasklet 就會去看自己裡面有哪些待執行的 Bottom Half 並且排程後執行<br>例如 printer 的執行速度較不重要，就可以被丟到 Tasklet 裡面，待重要的部分執行完後再由 Tasklet 將一群都沒有很重要的排程後執行</p>
+<hr>
+<h2 id="Week5-Process-Management-I"><a href="#Week5-Process-Management-I" class="headerlink" title="Week5 Process Management I"></a>Week5 Process Management I</h2><p>OS 讓 CPU 執行 user 的指令經過以下步驟</p>
+<p><strong>CPU 跑第一個 Program A(init)</strong><br><strong>-&gt; System call 請求 load Program B</strong><br><strong>-&gt; OS 幫忙處理 Program, process, thread</strong><br><strong>-&gt; OS Fork Program B</strong><br><strong>-&gt; Execute</strong><br><strong>-&gt; OS schedule</strong><br><strong>-&gt; Context switch</strong><br><strong>-&gt; CPU 執行 Program B</strong></p>
+<h3 id="OS-runs-the-first-Program"><a href="#OS-runs-the-first-Program" class="headerlink" title="OS runs the first Program"></a>OS runs the first Program</h3><p>CPU 在開機之後，把 OS load 進來並 init 之後，等待 user 指令</p>
+<h3 id="System-Call"><a href="#System-Call" class="headerlink" title="System Call"></a>System Call</h3><p><font color="red">在某些程式執行的過程中會需要使用到某些 lib 裡面包含較危險、敏感的資料與操作(fork, open, …)</font><br>因此這些 lib 內會透過 System Call 讓 OS 幫你完成這些指令</p>
+<p>目前 x86 使用 Exception 的方式，使 CPU 中斷去執行指定的服務<br><font color="red">Exception 可以被理解為一道道被預設在 CPU 內的指令(Unknown Instruction, Divied by Zero, …)</font><br>OS 會在開機的時候將 Exception 對應的指令放在記憶體內(Vector Table)<br>當 CPU 執行 Program 的過程中觸發了某些意外 Exception 就會透過 Vector Table 去執行對應的指令</p>
+<h3 id="Process-Context"><a href="#Process-Context" class="headerlink" title="Process Context"></a>Process Context</h3><p>在不同 Process 執行時會自己有相關的資料需要紀錄(Context)<br>在 CPU 執行指令時，如果有 System Call 進入 Kernel Space 不算是 Context Switch 最多只有更改 mode</p>
+<h3 id="Kernel-Space-and-User-Space-1"><a href="#Kernel-Space-and-User-Space-1" class="headerlink" title="Kernel Space and User Space"></a>Kernel Space and User Space</h3><p>User space 與 Kernel Space 實際上放在記憶體的兩個區塊<br>User space 與 Kernel Space 各有自己的 stack (User stack, Kernel stack)<br>在不同的 space 執行會把 sp (stack pointer) 指到自己 space 的 stack 上</p>
+<p>不同指令需要的權限不同，因此也會依權限將指令分為 Kernel mode 與 User mode 來管理<br>Kernel mode 與 User mode 的狀態為 CPU 在硬體上的狀態轉換，當在 Kernel mode 的底下，CPU 就能辦到更多的事情(傭有更多的權限)</p>
+<h3 id="Program-and-Process"><a href="#Program-and-Process" class="headerlink" title="Program and Process"></a>Program and Process</h3><p>在 Disk 裡面尚未執行的 Elf files(Execute file)，稱為 Program<br>將 Program load 到 Memory 裡面執行，稱為 Process</p>
+<h3 id="Fork"><a href="#Fork" class="headerlink" title="Fork"></a>Fork</h3><p>在 Program A 透過 OS fork 出 Program B 的時候會紀錄在 OS 的 Task structe 內<br>此 data structure 用來記錄執行時的相關資訊(discriptor, PID, parent, …)，以及執行狀態(也會用於 schedule)</p>
+<hr>
+<h2 id="Week6-Process-Management-II"><a href="#Week6-Process-Management-II" class="headerlink" title="Week6 Process Management II"></a>Week6 Process Management II</h2><h3 id="Context-Switch"><a href="#Context-Switch" class="headerlink" title="Context Switch"></a>Context Switch</h3><p>Context Switch 指的是在不同 Process 之間的切換需要有相關資料的備份，與執行到的位置等等的儲存，實際上為 register 的備份行為<br>Context Switch 的過程必定是比只做一件事耗時的，但目前為了使用者體驗的原因(ex:一邊播音樂、一邊寫報告)<br>因此會使用 Context Switch 讓多個工作都能輪流被執行到<br>原則上應該使 Context Switch 的時間佔執行工作的比例較少的 % 數，否則 CPU 可能會一直在執行 Context Switch 不怎麼執行工作導致效率差</p>
+<h3 id="Interrupt-Context"><a href="#Interrupt-Context" class="headerlink" title="Interrupt Context"></a>Interrupt Context</h3><p>在 Interrupt 時，因為要求速度快且有會馬上回原 Program 的假設<br>因此僅有部分的 Context 儲存與備份，但並不是完整的 Context Switch，也通常不稱為 Context Switch<br>(Ex:收到網路封包 Interrupt 到分析確定是哪個 Program 的封包之前就屬於 Interrupt Context)</p>
+<h3 id="Scheduler"><a href="#Scheduler" class="headerlink" title="Scheduler"></a>Scheduler</h3><p>在多個程式之間的切換與執行需要優先度、執行時間等等的安排，這邊所依靠的就是 Scheduler<br>在一般的 Process 開始執行前，Kernel 會加上 Timer Interrupt，每隔一段時間就會打進 User 的程式，就有機會被 Scheduler switch 掉<br>又或者是 User Program call 到任一 System Call 都有可能藏有 Scheduler 的呼叫在裡面，讓 Kernel 有機會將你 switch 掉</p>
+<p>通常 IO bound 的 Process 優先度會較高(因為較高機會是 Interactive 的 Process，ex:browser)<br>各種 OS ，各種版本，Schedule 的方法都可能會有些差異</p>
+<h3 id="User-preemption"><a href="#User-preemption" class="headerlink" title="User preemption"></a>User preemption</h3><p>作業系統是否有將 User Process Interrupt 後切換成另一個 User Process 的能力 (較簡單)</p>
+<h3 id="Kernel-preemption"><a href="#Kernel-preemption" class="headerlink" title="Kernel preemption"></a>Kernel preemption</h3><p>作業系統是否有在 User Process 透過 System Call 進入 Kernel 後 Interrupt 成另一個 User Process 的能力 (較困難)</p>
+<h3 id="Process-and-Thread"><a href="#Process-and-Thread" class="headerlink" title="Process and Thread"></a>Process and Thread</h3><p>如果今天開了很多個 word process，每個都要完整的資料結構會浪費空間<br>因此 thread 的用途就會將程式的部分重用，資料的部分 copy on write 以節省資源</p>
+<hr>
+<h2 id="Week7-Memory-Management-I"><a href="#Week7-Memory-Management-I" class="headerlink" title="Week7 Memory Management I"></a>Week7 Memory Management I</h2><ul>
+<li>[Memory access in a program]</li>
+<li>[Virtual to physical address]</li>
+<li>[Segmentation and paging]</li>
+<li>[Page table and TLB]</li>
+<li>[Cache]</li>
+<li>[x86/Linux example]</li>
+</ul>
+<h3 id="Memory-access-in-a-Program"><a href="#Memory-access-in-a-Program" class="headerlink" title="Memory access in a Program"></a>Memory access in a Program</h3><p>在 compile code 時，Compiler 會自己(或透過 linker)將各指令或 data 分配好要放在記憶體的哪個位置<br>CPU 看到的與 Compiler 相同為 physical memory 的位置，程式的執行指令與 data 就會被放在記憶體上等待被執行</p>
+<p>使用 virtual memory 比 physical memory 的好處?</p>
+<ul>
+<li><p>physical memory 會被多個 process shared 無法很好的管控</p>
+</li>
+<li><p>virtual memory 可將各個 process 的 memory 獨立分開</p>
+</li>
+<li><p>對 CPU / Compiler / User 來說，看到的是連續且較大的記憶體</p>
+</li>
+<li><p>使用 memory 更有效率</p>
+</li>
+<li><p>virtual memory 多一些單元(MMU)與轉換，較高成本也較慢</p>
+</li>
+</ul>
+<h3 id="Virtual-to-physical-address"><a href="#Virtual-to-physical-address" class="headerlink" title="Virtual to physical address"></a>Virtual to physical address</h3><p>Compiler / CPU / User 看到的 physical address 其實拉遠來看為 Virtual Memory，會透過一些方式轉換到 Physical Memory 上<br>實際上 Compiler 看到的連續記憶體，可能其實是透過 MMU 轉換到 Physical Memory 的各個地方看<br>更複雜的例子來看：如果程式執行過程中透過 Virtual Memory 到 Physical Memory 拿到自己要到指定的 Address 拿 Data 的話<br>這個 Address 也是 Virtual Memory，一樣會透過 MMU 轉換到正確的 Physicla Memory 位置拿資料</p>
+<p>對於每個 Process 來說可能都會擁有 4K 的 Memory 可以使用，但事實上可能只有正在使用 Memory 有 Physical Memory 的對應<br>尚未使用到的 Memory 可能其實還沒有 alloc physical memory 給你，這樣可以充分使用 physical memory</p>
+<h3 id="Segmentation-and-paging"><a href="#Segmentation-and-paging" class="headerlink" title="Segmentation and paging"></a>Segmentation and paging</h3><p>在 Memory 轉換的過程需要對應的 Segmentation table，大部分這個 table 會放在 memory 內，少部分放在 CPU 內(較為快速)<br>在程式執行時會透過這個 table 將 virtual memory 轉換到 physical memory 上，若 access 的 memory 超出限制就會產生錯誤，跳去 Exception</p>
+<p>x86 example<br>Logical Address -&gt; Segmentation -&gt; Linear Address -&gt; Paging -&gt; Physical Address</p>
+<h3 id="Page-table-and-TLB"><a href="#Page-table-and-TLB" class="headerlink" title="Page table and TLB"></a>Page table and TLB</h3><p>Page table 放在 memory 內，MMU 會透過這個 table 做 virtual 到 physical 的轉換<br>各個 Process 會有各自的 Page Table，Process A 的 0x1234 可能對到 0x6666、Process B 的 0x1234 對到 0x7777<br>TLB 會將常用的 address 存起來(Page table Cache) 就能不須要查表，直接轉換<br>在轉換的過程中，有可能 Physical memory 還沒被準備到 table 上，就會產生 Page Fault Exception<br>之後的 handler 就會將還未使用 Physical memory 的 address 填進 table 上，使 process 能正常執行</p>
+<p>先前提到的 Context Switch 也會將 TLB 清掉及 Page Table 切換成另一個 Process 的 Context</p>
+<h3 id="Cache"><a href="#Cache" class="headerlink" title="Cache"></a>Cache</h3><p>Cache 的目的是讓存取的速度更快，會將常用的 address 放在離 CPU 最近的位置上，只要 hit 到就能快速的存取內容</p>
+<h3 id="x86-Linux-example"><a href="#x86-Linux-example" class="headerlink" title="x86/Linux example"></a>x86/Linux example</h3><p>以 Linux 的來說，一個 4G 的 Space，User Program 會佔 X ，Kernel 會佔 4G - X<br>而最大 Size User 會佔 3G，Kernel 佔 1G<br>User Process 在轉換 address 過程中會被擋下，無法存取 Kernel (除了 System Call, Exception…)<br>Kernel Process 在轉換時可以看到 User 的內容</p>
+<hr>
+<h2 id="Week8-Memory-Management-II"><a href="#Week8-Memory-Management-II" class="headerlink" title="Week8 Memory Management II"></a>Week8 Memory Management II</h2><ul>
+<li>[Physical memory management]</li>
+<li>[Kernel memory management]</li>
+<li>[Internal and external fragmentation]</li>
+<li>[Kernel management APIs]</li>
+<li>[x86/linux kernel management]</li>
+</ul>
+<hr>
+<h2 id="Week9-Memory-Management-III"><a href="#Week9-Memory-Management-III" class="headerlink" title="Week9 Memory Management III"></a>Week9 Memory Management III</h2><ul>
+<li>[Page table and VM management]</li>
+<li>[Page fault handling]</li>
+<li>[Process address space]</li>
+<li>[Memory management APIs]</li>
+<li>[mmap and shared memory]</li>
+</ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shizsun0609tw.github.io/2021/02/26/1092-交大-作業系統總整與實作/" data-id="cklm3nlrp00012gsrcnv1o0h5" class="article-share-link">Share</a>
+      <a data-url="https://shizsun0609tw.github.io/2021/02/26/1092-交大-作業系統總整與實作/" data-id="ckxvl2fex0005swsrgjo5fqyk" class="article-share-link">Share</a>
       
         <a href="https://shizsun0609tw.github.io/2021/02/26/1092-交大-作業系統總整與實作/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -196,6 +287,15 @@
   
     
 <nav id="article-nav">
+  
+    <a href="/2022/01/01/110年軟韌預聘研替面試心得/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          110年軟韌預聘研替面試心得
+        
+      </div>
+    </a>
   
   
     <a href="/2021/01/18/1091-交大-互動式形變/" id="article-nav-older" class="article-nav-link-wrap">
@@ -254,7 +354,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Algorithm/">Algorithm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Compiler/">Compiler</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Computer-Graphics/">Computer Graphics</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Diary/">Diary</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Math/">Math</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NCTU/">NCTU</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NTOU/">NTOU</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Network-Programming/">Network Programming</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Operating-System/">Operating System</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Software-Engineering/">Software Engineering</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Tool/">Tool</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Algorithm/">Algorithm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Compiler/">Compiler</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Computer-Graphics/">Computer Graphics</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Diary/">Diary</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Math/">Math</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NCTU/">NCTU</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NTOU/">NTOU</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Network-Programming/">Network Programming</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Operating-System/">Operating System</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Software-Engineering/">Software Engineering</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Tool/">Tool</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Work/">Work</a></li></ul>
     </div>
   </div>
 
@@ -264,7 +364,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/02/">February 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/01/">January 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">September 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">March 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/09/">September 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">August 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">July 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">June 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">May 2019</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/01/">January 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/02/">February 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/01/">January 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">September 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">March 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/09/">September 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">August 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">July 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">June 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">May 2019</a></li></ul>
     </div>
   </div>
 
@@ -275,6 +375,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2022/01/01/110年軟韌預聘研替面試心得/">110年軟韌預聘研替面試心得</a>
+          </li>
         
           <li>
             <a href="/2021/02/26/1092-交大-作業系統總整與實作/">1092-交大-作業系統總整與實作</a>
@@ -290,10 +394,6 @@
         
           <li>
             <a href="/2020/09/20/研究新生活/">研究新生活</a>
-          </li>
-        
-          <li>
-            <a href="/2020/03/07/5th-Kind-Games-日本遊戲公司實習心得/">5th Kind Games 日本遊戲公司實習心得</a>
           </li>
         
       </ul>
@@ -317,7 +417,7 @@
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2021 Zhen-Hua Chen<br>
+      &copy; 2022 Zhen-Hua Chen<br>
       Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
