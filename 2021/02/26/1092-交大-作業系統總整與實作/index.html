@@ -17,7 +17,7 @@
 <meta property="og:locale" content="default">
 <meta property="og:image" content="https://shizsun0609tw.github.io/2021/02/26/1092-交大-作業系統總整與實作/Elf-layout.png">
 <meta property="og:image" content="https://shizsun0609tw.github.io/2021/02/26/1092-交大-作業系統總整與實作/memoryLayoutC.jpg">
-<meta property="og:updated_time" content="2022-02-16T06:28:06.571Z">
+<meta property="og:updated_time" content="2022-03-30T12:49:29.436Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="1092-交大-作業系統總整與實作">
 <meta name="twitter:description" content="Introduction Week1 - Before OSDI Week2 - Booting Week3 - Interrupt and Interrupt Handling I Week4 - Interrupt and Interrupt Handling II Week5 - Process Management I Week6 - Process Management II Week">
@@ -106,7 +106,7 @@
 <li><a href="#Week7-Memory-Management-I">Week7 - Memory Management I</a></li>
 <li><a href="#Week8-Memory-Management-II">Week8 - Memory Management II</a></li>
 <li><a href="#Week9-Memory-Management-III">Week9 - Memory Management III</a></li>
-<li><a href="#Week10-File-System-and-Block-I/O">Week10 - File System and Blick I/O</a></li>
+<li><a href="#Week10-FileSystem-and-Block-IO">Week10 - FileSystem and Block I/O</a></li>
 <li><a href="#Week11-Kernel-Synchronization">Week11 - Kernel Synchronization</a></li>
 <li><a href="#Week12-Network-Protocol-and-NIC-Driver">Week12 - Network Protocol and NIC Driver</a></li>
 </ul>
@@ -230,15 +230,7 @@
 <h3 id="Kernel-preemption"><a href="#Kernel-preemption" class="headerlink" title="Kernel preemption"></a>Kernel preemption</h3><p>作業系統是否有在 User Process 透過 System Call 進入 Kernel 後 Interrupt 成另一個 User Process 的能力 (較困難)</p>
 <h3 id="Process-and-Thread"><a href="#Process-and-Thread" class="headerlink" title="Process and Thread"></a>Process and Thread</h3><p>如果今天開了很多個 word process，每個都要完整的資料結構會浪費空間<br>因此 thread 的用途就會將程式的部分重用，資料的部分 copy on write 以節省資源</p>
 <hr>
-<h2 id="Week7-Memory-Management-I"><a href="#Week7-Memory-Management-I" class="headerlink" title="Week7 Memory Management I"></a>Week7 Memory Management I</h2><ul>
-<li>[Memory access in a program]</li>
-<li>[Virtual to physical address]</li>
-<li>[Segmentation and paging]</li>
-<li>[Page table and TLB]</li>
-<li>[Cache]</li>
-<li>[x86/Linux example]</li>
-</ul>
-<h3 id="Memory-access-in-a-Program"><a href="#Memory-access-in-a-Program" class="headerlink" title="Memory access in a Program"></a>Memory access in a Program</h3><p>在 compile code 時，Compiler 會自己(或透過 linker)將各指令或 data 分配好要放在記憶體的哪個位置<br>CPU 看到的與 Compiler 相同為 physical memory 的位置，程式的執行指令與 data 就會被放在記憶體上等待被執行</p>
+<h2 id="Week7-Memory-Management-I"><a href="#Week7-Memory-Management-I" class="headerlink" title="Week7 Memory Management I"></a>Week7 Memory Management I</h2><h3 id="Memory-access-in-a-Program"><a href="#Memory-access-in-a-Program" class="headerlink" title="Memory access in a Program"></a>Memory access in a Program</h3><p>在 compile code 時，Compiler 會自己(或透過 linker)將各指令或 data 分配好要放在記憶體的哪個位置<br>CPU 看到的與 Compiler 相同為 physical memory 的位置，程式的執行指令與 data 就會被放在記憶體上等待被執行</p>
 <p>使用 virtual memory 比 physical memory 的好處?</p>
 <ul>
 <li><p>physical memory 會被多個 process shared 無法很好的管控</p>
@@ -256,34 +248,33 @@
 <p>對於每個 Process 來說可能都會擁有 4K 的 Memory 可以使用，但事實上可能只有正在使用 Memory 有 Physical Memory 的對應<br>尚未使用到的 Memory 可能其實還沒有 alloc physical memory 給你，這樣可以充分使用 physical memory</p>
 <h3 id="Segmentation-and-paging"><a href="#Segmentation-and-paging" class="headerlink" title="Segmentation and paging"></a>Segmentation and paging</h3><p>在 Memory 轉換的過程需要對應的 Segmentation table，大部分這個 table 會放在 memory 內，少部分放在 CPU 內(較為快速)<br>在程式執行時會透過這個 table 將 virtual memory 轉換到 physical memory 上，若 access 的 memory 超出限制就會產生錯誤，跳去 Exception</p>
 <p>x86 example<br>Logical Address -&gt; Segmentation -&gt; Linear Address -&gt; Paging -&gt; Physical Address</p>
-<h3 id="Page-table-and-TLB"><a href="#Page-table-and-TLB" class="headerlink" title="Page table and TLB"></a>Page table and TLB</h3><p>Page table 放在 memory 內，MMU 會透過這個 table 做 virtual 到 physical 的轉換<br>各個 Process 會有各自的 Page Table，Process A 的 0x1234 可能對到 0x6666、Process B 的 0x1234 對到 0x7777<br>TLB 會將常用的 address 存起來(Page table Cache) 就能不須要查表，直接轉換<br>在轉換的過程中，有可能 Physical memory 還沒被準備到 table 上，就會產生 Page Fault Exception<br>之後的 handler 就會將還未使用 Physical memory 的 address 填進 table 上，使 process 能正常執行</p>
+<h3 id="Page-table-and-TLB"><a href="#Page-table-and-TLB" class="headerlink" title="Page table and TLB"></a>Page table and TLB</h3><p>Page table 放在 memory 內，MMU 會透過這個 table 做 virtual 到 physical 的轉換<br>各個 Process 會有各自的 Page Table，Process A 的 0x1234 可能對到 0x6666、Process B 的 0x1234 對到 0x7777<br>TLB 會將常用的 address 存起來(Page table Cache) 就能不需要查表，直接轉換<br>在轉換的過程中，有可能 Physical memory 還沒被準備到 table 上，就會產生 Page Fault Exception<br>之後的 handler 就會將還未使用 Physical memory 的 address 填進 table 上，使 process 能正常執行</p>
 <p>先前提到的 Context Switch 也會將 TLB 清掉及 Page Table 切換成另一個 Process 的 Context</p>
 <h3 id="Cache"><a href="#Cache" class="headerlink" title="Cache"></a>Cache</h3><p>Cache 的目的是讓存取的速度更快，會將常用的 address 放在離 CPU 最近的位置上，只要 hit 到就能快速的存取內容</p>
 <h3 id="x86-Linux-example"><a href="#x86-Linux-example" class="headerlink" title="x86/Linux example"></a>x86/Linux example</h3><p>以 Linux 的來說，一個 4G 的 Space，User Program 會佔 X ，Kernel 會佔 4G - X<br>而最大 Size User 會佔 3G，Kernel 佔 1G<br>User Process 在轉換 address 過程中會被擋下，無法存取 Kernel (除了 System Call, Exception…)<br>Kernel Process 在轉換時可以看到 User 的內容</p>
 <hr>
-<h2 id="Week8-Memory-Management-II"><a href="#Week8-Memory-Management-II" class="headerlink" title="Week8 Memory Management II"></a>Week8 Memory Management II</h2><ul>
-<li>[Physical memory management]</li>
-<li>[Kernel memory management]</li>
-<li>[Internal and external fragmentation]</li>
-<li>[Kernel management APIs]</li>
-<li>[x86/linux kernel management]</li>
-</ul>
+<h2 id="Week8-Memory-Management-II"><a href="#Week8-Memory-Management-II" class="headerlink" title="Week8 Memory Management II"></a>Week8 Memory Management II</h2><h3 id="Physical-memory-management"><a href="#Physical-memory-management" class="headerlink" title="Physical memory management"></a>Physical memory management</h3><p>顧名思義，管理實際存在的物理記憶體，作業系統會準備管理實體記憶體的 table<br>當某個 app 來跟 OS 要一塊記憶體時，記憶體就能透過此表尋找登記實體記憶體的分配，並把指標回傳給 app<br>在 Kernel 使用時，通常需要連續的記憶體，使得 Kernel 能有更好的效能，jump 時也能直接跳到指定的 offset 上<br>在管理物理記憶體的層級中就不包含 MMU(虛擬記憶體對實體記憶體的對應) 的使用<br>缺少了 MMU 也少了對記憶體的保護，某些硬體會使用 MPU(Memory Protection Units) 來保護記憶體的使用(Read/Write Region/Segment)<br>可以透過 MPU 對整塊 Memory Region 定義使用權限，就能達到 Kernel/User 權限管理的效果</p>
+<h3 id="Kernel-memory-management"><a href="#Kernel-memory-management" class="headerlink" title="Kernel memory management"></a>Kernel memory management</h3><p>管理記憶體本身也會花記憶體，因此資料結構不能太複雜產生過大的 table<br>Kernel Process 為了效能要求連續的 physical memory，User Process 則可以讓 physical memory 分散<br>此資料結構管理時，Search 時要越快越好，最好能 O(1)，否則依現在 app 的量肯定找到天荒地老<br>必須將 User Process 的 Logic Address 對 Physical memory 對應提供 API，以及 Kernel 對 Physical memory 的 API</p>
+<h3 id="Internal-and-external-fragmentation"><a href="#Internal-and-external-fragmentation" class="headerlink" title="Internal and external fragmentation"></a>Internal and external fragmentation</h3><p>External fragmentation，在記憶體不斷的配置與釋放後，配置的記憶體之間會出現許多零碎的片段無法使用因此浪費<br>此種問題可以透過將 Memory 切成不同大小的 Page frame，例如:2^0 * 4K, 2^1 * 4K, 2^4 * 4K<br>直接按照需求給對應大小的 Memory，但此種行為容易造成許多的 Internal fragmentation</p>
+<p>Internal fragmentation，舉例來說:當 app 跟 OS 要 0.5 * 4K 的 memory，OS 會直接給 2^1 * 4K 的大小<br>這樣子的方法會使多給的記憶體浪費掉，產生 Internal fragmentation</p>
+<h3 id="x86-linux-kernel-management"><a href="#x86-linux-kernel-management" class="headerlink" title="x86/linux kernel management"></a>x86/linux kernel management</h3><p>Linux Kernel 採用 Buddy System 進行 physical memory 的管理<br>Buddy System 會產生大塊的 page frame 交給 app，但會產生很大的 Internal fragmentation<br>另外如果需要較小的 memory 會使用 Slab Allocator 減少 Internal fragmentation 的問題<br>在 physical memory 管理上因為還是有速度上的差距，因此另外還有使用 ZONE 的結構去管理不同速度的 memory 供不同情境下使用</p>
 <hr>
-<h2 id="Week9-Memory-Management-III"><a href="#Week9-Memory-Management-III" class="headerlink" title="Week9 Memory Management III"></a>Week9 Memory Management III</h2><ul>
-<li>[Page table and VM management]</li>
-<li>[Page fault handling]</li>
-<li>[Process address space]</li>
-<li>[Memory management APIs]</li>
-<li>[mmap and shared memory]</li>
-</ul>
+<h2 id="Week9-Memory-Management-III"><a href="#Week9-Memory-Management-III" class="headerlink" title="Week9 Memory Management III"></a>Week9 Memory Management III</h2><h3 id="Process-address-space"><a href="#Process-address-space" class="headerlink" title="Process address space"></a>Process address space</h3><p>在 Linux 系統中，Process 的 Memory 分給 Kernel space 1G, User space 3G 而這裡的 Memory 是 Logic Memory<br>每個 Process 就會有自己的 Memory 配置，實際上 OS 會對應到不同地方的 Physical Memory<br>在 Process 上會有 task_struct 去存此項 Process 的執行狀況，內部又有 mm_struct 負責記錄 memory 管理的狀況<br>mm_struct 中有多個 vm_area_struct，用於管理 virtual memory 的位置，讓 Process 看起來自己像是完整的 memory 以及保護區塊的使用</p>
+<h3 id="VMA"><a href="#VMA" class="headerlink" title="VMA"></a>VMA</h3><p>VMA 記錄了 virtual memory 所對應到的 page 或是 file，幫助 OS 找到實際的資料要在哪個位置找<br>VMA 也幫忙保護 memory area 的存取，若 access 受保護的部分將會產生 segmentation falut<br>若此 page 還未放進 physical memory 中，將會產生 page falut</p>
+<h3 id="Page-Falut"><a href="#Page-Falut" class="headerlink" title="Page Falut"></a>Page Falut</h3><p>當無法在 physical memory 找到對應的 page 時，產生了 page fault<br>page fault 後 OS 會將需要的 page load 到存取的位置，之後再請 process 重新讀一次<br>就能使 process access 到正確的內容</p>
+<h3 id="Memory-Region"><a href="#Memory-Region" class="headerlink" title="Memory Region"></a>Memory Region</h3><p>在 VMA 不斷的 allocate, free 中，也需要找出空的 region 處理新的 allocate 需求<br>在 Linux 中使用 Red-Black Tree 做此部分的的記憶體管理，在 O(log n)中找到想要的空間</p>
+<h3 id="Memory-Mapping"><a href="#Memory-Mapping" class="headerlink" title="Memory Mapping"></a>Memory Mapping</h3><p>透過 virtual Memory 來使用 physcial memory 可以帶來許多好處<br>保證每個 process 可以自己看到乾淨的 memory 不互相干擾<br>若不同 process 用到的相同的 lib，OS 可以將兩個 process 的 lib 對應到相同的 physical memory 以節省空間<br>process 本身也不用擔心資料源自哪裡，OS 可以將 virtual memory 對應到 physical memory 也可以對應到 file(cache, disk)</p>
 <hr>
-<h2 id="Week10-File-System-and-Block-I-O"><a href="#Week10-File-System-and-Block-I-O" class="headerlink" title="Week10 File System and Block I/O"></a>Week10 File System and Block I/O</h2><hr>
+<h2 id="Week10-FileSystem-and-Block-IO"><a href="#Week10-FileSystem-and-Block-IO" class="headerlink" title="Week10 FileSystem and Block IO"></a>Week10 FileSystem and Block IO</h2><h3 id="File-Open"><a href="#File-Open" class="headerlink" title="File Open"></a>File Open</h3><p>在 open file 時，system call 進入 kernel 後，kernel 會先在 memory 尋找是否有 file 的資料，如果沒有就交由 filesystem 去找<br>filesystem 透過 parse 過的 file path，從 root 開始一層一層往下找 block (不同 filesystem 可能有些不同)<br>一個 device driver 直接對於 hardware 做讀取操作，filesystem 建立在 device driver 上層<br>因此一個 device driver 可以用不同的 filesystem 去讀取，只要此 filesystem 有辦法正確的與 device driver 做溝通</p>
+<h3 id="Virtual-Filesystem"><a href="#Virtual-Filesystem" class="headerlink" title="Virtual Filesystem"></a>Virtual Filesystem</h3><p>在接到各種 filesystem 前，OS 會與 virtual filesystem 進行溝通<br>vitrual filesystem 與 OO 的繼承概念相同，各種不同的 filesystem 可以掛在 virtual filesystem 下 implement<br>因此上層在使用的時候可以透過相同的操作方式，並透過 virtual filesystem 對下層實際的 filesystem 操作</p>
+<h3 id="I-O-Scheduler"><a href="#I-O-Scheduler" class="headerlink" title="I/O Scheduler"></a>I/O Scheduler</h3><p>在操作硬碟時的 operation 需要有一定的結構性，因此使用 Queue 的方式對 hardware 做存取<br>將各種 request 的 merge, sorting 等操作時，有一定的演算法結構去做操作，以提升 performance</p>
+<hr>
 <h2 id="Week11-Kernel-Synchronization"><a href="#Week11-Kernel-Synchronization" class="headerlink" title="Week11 Kernel Synchronization"></a>Week11 Kernel Synchronization</h2><hr>
 <h2 id="Week12-Network-Protocol-and-NIC-Driver"><a href="#Week12-Network-Protocol-and-NIC-Driver" class="headerlink" title="Week12 Network Protocol and NIC Driver"></a>Week12 Network Protocol and NIC Driver</h2>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shizsun0609tw.github.io/2021/02/26/1092-交大-作業系統總整與實作/" data-id="ckzp6apt40000g8srtr55hiia" class="article-share-link">Share</a>
+      <a data-url="https://shizsun0609tw.github.io/2021/02/26/1092-交大-作業系統總整與實作/" data-id="cl1edg1ps0005rwsrdkztb3d1" class="article-share-link">Share</a>
       
         <a href="https://shizsun0609tw.github.io/2021/02/26/1092-交大-作業系統總整與實作/#disqus_thread" class="article-comment-link">Comments</a>
       
