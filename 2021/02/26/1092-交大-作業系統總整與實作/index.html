@@ -17,7 +17,7 @@
 <meta property="og:locale" content="default">
 <meta property="og:image" content="https://shizsun0609tw.github.io/2021/02/26/1092-交大-作業系統總整與實作/Elf-layout.png">
 <meta property="og:image" content="https://shizsun0609tw.github.io/2021/02/26/1092-交大-作業系統總整與實作/memoryLayoutC.jpg">
-<meta property="og:updated_time" content="2022-03-30T12:49:29.436Z">
+<meta property="og:updated_time" content="2022-04-01T08:00:03.030Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="1092-交大-作業系統總整與實作">
 <meta name="twitter:description" content="Introduction Week1 - Before OSDI Week2 - Booting Week3 - Interrupt and Interrupt Handling I Week4 - Interrupt and Interrupt Handling II Week5 - Process Management I Week6 - Process Management II Week">
@@ -271,12 +271,19 @@
 <h3 id="Virtual-Filesystem"><a href="#Virtual-Filesystem" class="headerlink" title="Virtual Filesystem"></a>Virtual Filesystem</h3><p>在接到各種 filesystem 前，OS 會與 virtual filesystem 進行溝通<br>vitrual filesystem 與 OO 的繼承概念相同，各種不同的 filesystem 可以掛在 virtual filesystem 下 implement<br>因此上層在使用的時候可以透過相同的操作方式，並透過 virtual filesystem 對下層實際的 filesystem 操作</p>
 <h3 id="I-O-Scheduler"><a href="#I-O-Scheduler" class="headerlink" title="I/O Scheduler"></a>I/O Scheduler</h3><p>在操作硬碟時的 operation 需要有一定的結構性，因此使用 Queue 的方式對 hardware 做存取<br>將各種 request 的 merge, sorting 等操作時，有一定的演算法結構去做操作，以提升 performance</p>
 <hr>
-<h2 id="Week11-Kernel-Synchronization"><a href="#Week11-Kernel-Synchronization" class="headerlink" title="Week11 Kernel Synchronization"></a>Week11 Kernel Synchronization</h2><hr>
+<h2 id="Week11-Kernel-Synchronization"><a href="#Week11-Kernel-Synchronization" class="headerlink" title="Week11 Kernel Synchronization"></a>Week11 Kernel Synchronization</h2><h3 id="Critical-Region-Critical-Section"><a href="#Critical-Region-Critical-Section" class="headerlink" title="Critical Region(Critical Section)"></a>Critical Region(Critical Section)</h3><p>在 multithreading 的情況下操作 share data 時，要避免 data race 的問題<br>必須考慮執行的先後順序，或是必須完整的操作結束才能給其他 thread 使用<br>在這段操作 share data 期間的程式就屬於 critical section</p>
+<h3 id="Atomic-Instruction"><a href="#Atomic-Instruction" class="headerlink" title="Atomic Instruction"></a>Atomic Instruction</h3><p>CPU 設計的 instruction 會設計一些 atomic operation 來保證指令唯一的執行<br>可以保證 instruction 是單一的並不時由多個指令組成，避免多個指令執行間被中斷</p>
+<h3 id="Lock"><a href="#Lock" class="headerlink" title="Lock"></a>Lock</h3><p>最常見避免 race 的問題就是使用各種 lock 將 data 鎖住<br>等待 share data 的 release 之後才繼續進行操作</p>
+<h3 id="Deadlock"><a href="#Deadlock" class="headerlink" title="Deadlock"></a>Deadlock</h3><p>在 lock 的過程中，很常遇到拿出來談的一件事就是 deadlock<br>當兩個 thread 同時要 lock 一個以上的 data 時<br>若 thead1 lock dataA, thread2 lock dataB<br>接下來 thread1 需要 lock dataB, thread2 lock dataA<br>就算造成雙方 lock 不到需要的 data，也不 release 自己的 data<br>在開發 multithreading 的過程中若沒有小心注意，容易產生此種問題並有嚴重當掉的後果</p>
+<h3 id="Spin-Lock"><a href="#Spin-Lock" class="headerlink" title="Spin Lock"></a>Spin Lock</h3><p>最基本的 lock 形式 - Spin lock，被擋住的 thread 直接 busy loops 去等待 data 被 release<br>在準備 lock data 前，會先 disable kernel preemption 避免 lock 的過程中被中斷<br>由於 lock 的時候為 busy waiting 因此會浪費 CPU 的效能，最好不要 lock 太久</p>
+<h3 id="Semaphore"><a href="#Semaphore" class="headerlink" title="Semaphore"></a>Semaphore</h3><p>sleeping locks，等待資源的時候就會將自己丟到 wait queue 之後就先將 CPU context switch 去別的 thread<br>對於整體的執行效率會比較好，在等待時就先將 CPU 切去做其他事，之後再回來處理<br>但對於自身的 thread 反而執行速度會變慢，可能要等一輪 schedule 才能再回來</p>
+<h3 id="Memory-Barrier"><a href="#Memory-Barrier" class="headerlink" title="Memory Barrier"></a>Memory Barrier</h3><p>在執行 code 時，CPU 因為最佳化可能會將執行順序調換，此時加入 memory barrier 就能保證執行的順序</p>
+<hr>
 <h2 id="Week12-Network-Protocol-and-NIC-Driver"><a href="#Week12-Network-Protocol-and-NIC-Driver" class="headerlink" title="Week12 Network Protocol and NIC Driver"></a>Week12 Network Protocol and NIC Driver</h2>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shizsun0609tw.github.io/2021/02/26/1092-交大-作業系統總整與實作/" data-id="cl1ee0alp0005m8sryv6qjo37" class="article-share-link">Share</a>
+      <a data-url="https://shizsun0609tw.github.io/2021/02/26/1092-交大-作業系統總整與實作/" data-id="cl1opb5k50000kwsrcxz1psde" class="article-share-link">Share</a>
       
         <a href="https://shizsun0609tw.github.io/2021/02/26/1092-交大-作業系統總整與實作/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -345,7 +352,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Algorithm/">Algorithm</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Compiler/">Compiler</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Computer-Graphics/">Computer Graphics</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Diary/">Diary</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Network-Programming/">Network Programming</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Operating-System/">Operating System</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Software-Engineering/">Software Engineering</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Tool/">Tool</a></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Algorithm/">Algorithm</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Compiler/">Compiler</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Computer-Graphics/">Computer Graphics</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Diary/">Diary</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Network-Programming/">Network Programming</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Operating-System/">Operating System</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Software-Engineering/">Software Engineering</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Tool/">Tool</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Unity/">Unity</a></li></ul>
     </div>
   </div>
 
@@ -355,7 +362,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Algorithm/">Algorithm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Compiler/">Compiler</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Computer-Graphics/">Computer Graphics</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Diary/">Diary</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Math/">Math</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NCTU/">NCTU</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NTOU/">NTOU</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Network-Programming/">Network Programming</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Operating-System/">Operating System</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Software-Engineering/">Software Engineering</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Tool/">Tool</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Work/">Work</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Algorithm/">Algorithm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Compiler/">Compiler</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Computer-Graphics/">Computer Graphics</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Diary/">Diary</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Math/">Math</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NCTU/">NCTU</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NTOU/">NTOU</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Network-Programming/">Network Programming</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Operating-System/">Operating System</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Software-Engineering/">Software Engineering</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Tool/">Tool</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Unity/">Unity</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Work/">Work</a></li></ul>
     </div>
   </div>
 
@@ -365,7 +372,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/01/">January 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/02/">February 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/01/">January 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">September 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">March 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/09/">September 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">August 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">July 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">June 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">May 2019</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/04/">April 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/01/">January 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/02/">February 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/01/">January 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">September 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">March 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/09/">September 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">August 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">July 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">June 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">May 2019</a></li></ul>
     </div>
   </div>
 
@@ -376,6 +383,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2022/04/07/Unity常用API整理/">Unity常用API整理</a>
+          </li>
         
           <li>
             <a href="/2022/01/01/110年軟韌預聘研替面試心得/">110年軟韌預聘研替面試心得</a>
@@ -391,10 +402,6 @@
         
           <li>
             <a href="/2021/01/14/1091-交大-網路程式設計/">1091-交大-網路程式設計</a>
-          </li>
-        
-          <li>
-            <a href="/2020/09/20/研究新生活/">研究新生活</a>
           </li>
         
       </ul>
