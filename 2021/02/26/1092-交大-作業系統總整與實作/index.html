@@ -17,7 +17,7 @@
 <meta property="og:locale" content="default">
 <meta property="og:image" content="https://shizsun0609tw.github.io/2021/02/26/1092-交大-作業系統總整與實作/Elf-layout.png">
 <meta property="og:image" content="https://shizsun0609tw.github.io/2021/02/26/1092-交大-作業系統總整與實作/memoryLayoutC.jpg">
-<meta property="og:updated_time" content="2022-04-01T08:00:03.030Z">
+<meta property="og:updated_time" content="2022-04-14T03:20:46.951Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="1092-交大-作業系統總整與實作">
 <meta name="twitter:description" content="Introduction Week1 - Before OSDI Week2 - Booting Week3 - Interrupt and Interrupt Handling I Week4 - Interrupt and Interrupt Handling II Week5 - Process Management I Week6 - Process Management II Week">
@@ -115,7 +115,15 @@
 <a id="more"></a>
 
 <hr>
-<h2 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h2><p><strong>待補</strong></p>
+<h2 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h2><ul>
+<li><font color="red"><strong>作業量: 5</strong></font></li>
+<li><font color="red"><strong>考試量: 0</strong></font></li>
+<li><font color="red"><strong>整體難易度: 4.5</strong></font><br>(滿分 5 分)</li>
+</ul>
+<p>交大資工有名的 OSDI，作業硬出名的<br>每兩周一個作業、沒有考試，從期初到期末就是在樹梅派上從零開始刻出一套有基本功能的 OS<br>作業部分歷年的 code 以及同學的 code 都會放在 github 上，他也不怕你看，因為不懂理論知識你也看不懂XD<br>由於之前大部分都是在偏上層做些 application 應用，這門課修起來真的是硬到不行<br>上課方式都是先看預錄的影片，上課時間討論影片的內容及問題<br>上課老師很會帶領大家一起思考討論一些作業系統的問題，整個上課的過程中就有點像是強者之間的交流(雖然我很菜…)<br>此門課對於 OS 基礎工不好的以及未來想到竹科科技業發展的會有相當大的幫助</p>
+<p>單看本篇文所整理的一些課程內容是沒辦法感受到本門課的精隨<br>最精華的部分就是在痛苦的作業地獄以及 demo 作業時與 TA 之間的問答，以及上課過程中老師的引導及思考<br>TA 們也每個都強如鬼，demo 過程就是不斷的問答你的 code 怎麼寫、怎麼改、有沒有更好的做法<br>對於有熱忱的技術宅會覺得每次的交流都很過癮，醍醐灌頂就是這樣的感覺</p>
+<p>因為本門課的內容真的蠻底層，還會摸到一點硬體跟組語，對於跟硬體搭不上邊還完全沒修過組語的我一個人奮戰就是巴著 TA 問問題<br>如果有紮實的將本門課的內容好好的學習完，對基本功一定有相當程度的提升<br>本門課的 loading 幾乎是其他課 1.5-2 倍左右，修了之後最好不要選其他太硬的課<br>整體難硬度剩下的 0.5 就是給在沒有考試而已 :)<br>另外，這門課在上的時候本來為曹教授，後來換教授開課後就不確定課程內容是否相同</p>
+<p>附上作業連結: <a href="https://grasslab.github.io/NYCU_Operating_System_Capstone/index.html" target="_blank" rel="noopener">Link</a><br>自己的作業: <a href="https://github.com/shizsun0609tw/osc2021" target="_blank" rel="noopener">Github</a></p>
 <hr>
 <h2 id="Week1-Before-OSDI"><a href="#Week1-Before-OSDI" class="headerlink" title="Week1 - Before OSDI"></a>Week1 - Before OSDI</h2><p><font color="red"><strong>OS 根本上就是支巨大且複雜的程式、Application</strong></font></p>
 <p>開發 OS 與大型軟體程式的開發相似但牽涉到領域知識太多，基本上幾乎是把 CS 學過的各種知識彙整並應用<br>在念 CS 領域大部分也都會有寫 OS 的人通常都是各種大神才能應付的領域<br>這門課程會將許多在學習 CS 過程中大家較為模糊的區塊以及概念拿出來討論<br>小弟在寫這篇文章的時候也會跟著每周上課進度以及 lab 的進度做撰寫，如果有錯誤的部分也歡迎大家一起在留言區討論</p>
@@ -279,11 +287,12 @@
 <h3 id="Semaphore"><a href="#Semaphore" class="headerlink" title="Semaphore"></a>Semaphore</h3><p>sleeping locks，等待資源的時候就會將自己丟到 wait queue 之後就先將 CPU context switch 去別的 thread<br>對於整體的執行效率會比較好，在等待時就先將 CPU 切去做其他事，之後再回來處理<br>但對於自身的 thread 反而執行速度會變慢，可能要等一輪 schedule 才能再回來</p>
 <h3 id="Memory-Barrier"><a href="#Memory-Barrier" class="headerlink" title="Memory Barrier"></a>Memory Barrier</h3><p>在執行 code 時，CPU 因為最佳化可能會將執行順序調換，此時加入 memory barrier 就能保證執行的順序</p>
 <hr>
-<h2 id="Week12-Network-Protocol-and-NIC-Driver"><a href="#Week12-Network-Protocol-and-NIC-Driver" class="headerlink" title="Week12 Network Protocol and NIC Driver"></a>Week12 Network Protocol and NIC Driver</h2>
+<h2 id="Week12-Network-Protocol-and-NIC-Driver"><a href="#Week12-Network-Protocol-and-NIC-Driver" class="headerlink" title="Week12 Network Protocol and NIC Driver"></a>Week12 Network Protocol and NIC Driver</h2><p>網路部分的內容主要以 protocal, 網路傳送的原理概略<br>以及作業系統與網路 lib 之間的關係<br>此部分內容較散，參考網程這門課的內容可能會比較詳細<br><a href="https://shizsun0609tw.github.io/2021/01/14/1091-交大-網路程式設計/">1091-網程</a></p>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shizsun0609tw.github.io/2021/02/26/1092-交大-作業系統總整與實作/" data-id="cl1opb5k50000kwsrcxz1psde" class="article-share-link">Share</a>
+      <a data-url="https://shizsun0609tw.github.io/2021/02/26/1092-交大-作業系統總整與實作/" data-id="cl1q62csf0000assr8vimvuug" class="article-share-link">Share</a>
       
         <a href="https://shizsun0609tw.github.io/2021/02/26/1092-交大-作業系統總整與實作/#disqus_thread" class="article-comment-link">Comments</a>
       
